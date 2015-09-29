@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 
-#target_dir = "../src/"
-target_dir = "../src_test29/"
+target_dir = "../src/"
+#target_dir = "../src_test29/"
 work_dir = "."
 files = ["*.F", "*.f", "input.params", \
          "make.macro", "make.config", "Makefile", \
