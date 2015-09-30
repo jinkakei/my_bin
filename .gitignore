@@ -3,5 +3,7 @@ gpull_i
 gpush_i
 hncd_less
 ncless
+# test script
+test.rb
 # kudpc only
 kudpc/
