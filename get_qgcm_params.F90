@@ -6,6 +6,9 @@ program get_parameters
 
       write(*,*) "call test of fortran progam from ruby script"
 
+      write(*,*) 
+      write(*,*) "nxto = ", nxto
+
 
 end program get_parameters
 

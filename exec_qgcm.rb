@@ -21,7 +21,7 @@ exefname = "q-gcm"
 exit_with_msg ("The executable file #{exefname} is not exist") \
   unless File.exist?( exefname )
 
-=begin
+=begin # temporary comment out
 exit_with_msg ("no casename") unless ARGV[0]
 cname = ARGV[0]
 
@@ -29,12 +29,13 @@ odir = "./outdata_#{cname}"
 exit_with_msg("outdir #{odir} already exists") if File.exist?( odir )
 
 exec_command( "mkdir #{odir}" )
-  exec_command( "rmdir #{odir}" ) # for test
+File.open( "outdata.dat", 'w' ) do | f | f.puts "#{odir}" end
+##  exec_command( "rmdir #{odir}" ) # for test
 =end
 
-
-exec_command( "ifort -o get_param.exe ~/bin_k247/get_param.F90")
-exec_command( "./get_param.exe")
+get_qpara = "get_qgcm_params"
+exec_command( "ifort -o #{get_qpara}.exe ~/bin_k247/#{get_qpara}.F90")
+exec_command( "./#{get_qpara}.exe")
 
 # Under Construction
 ## set boundary condition
