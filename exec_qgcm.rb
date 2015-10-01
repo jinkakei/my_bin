@@ -17,11 +17,11 @@ require '~/lib_k247/K247_qgcm'
 
 watcher = K247_Main_Watch.new
 
+=begin # temporary comment out
 exefname = "q-gcm"
 exit_with_msg ("The executable file #{exefname} is not exist") \
   unless File.exist?( exefname )
 
-=begin # temporary comment out
 exit_with_msg ("no casename") unless ARGV[0]
 cname = ARGV[0]
 
@@ -35,7 +35,9 @@ File.open( "outdata.dat", 'w' ) do | f | f.puts "#{odir}" end
 
 get_qpara = "get_qgcm_params"
 exec_command( "ifort -o #{get_qpara}.exe ~/bin_k247/#{get_qpara}.F90")
-exec_command( "./#{get_qpara}.exe")
+#exec_command( "./#{get_qpara}.exe")
+pret = popen3_wrap( "./#{get_qpara}.exe" )
+  show_stdoe( pret )
 
 # Under Construction
 ## set boundary condition

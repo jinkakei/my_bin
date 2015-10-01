@@ -5,5 +5,7 @@ hncd_less
 ncless
 # test script
 test.rb
+# exe file
+*.exe
 # kudpc only
 kudpc/
