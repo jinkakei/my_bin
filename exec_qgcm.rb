@@ -85,9 +85,11 @@ watcher = K247_Main_Watch.new
 
 
 # exec command
-#cmd_str = "qsub cntl_q-gcm"
-exec_command( "qsub cntl_q-gcm" )
-
+  #cmd_str = "qsub cntl_q-gcm"
+  exec_command( "qsub < cntl_q-gcm" )
+  #exec_command( "qsub cntl_q-gcm" )
+  # Error @ 2015-10-04
+  #   Mandatory parameter [-q] is not specified.
 
 watcher.end_process
 
