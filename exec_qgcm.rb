@@ -35,6 +35,59 @@ watcher = K247_Main_Watch.new
   ##  exec_command( "rmdir #{odir}" ) # for test
 =end
 
+
+# get qgcm paramters -> see below
+
+# Fortran options
+  ncdf_path = "/opt/cray/netcdf/4.2.0/intel/120"
+  op_ncdf = "-I#{ncdf_path}/include -L#{ncdf_path}/lib -lnetcdf -lnetcdff"
+  op_w = "-warn all"
+
+=begin # temporary comment out
+# set boundary condition
+  qfor = "k247_make_forcing_q-gcm"
+  qfor_e = "#{qfor}.exe"
+  #qfor_f =  "~/bin_k247/#{qfor}.F90"
+  qfor_f =  "#{qfor}.F90"
+  exec_command( "ifort #{op_w} -o #{qfor_e} #{qfor_f} #{op_ncdf}" )
+  pret = popen3_wrap( "./#{qfor_e}" )
+    show_stdoe( pret )
+  forc_fname = ""; f_fname = "./forcing_fname.txt"
+    File.open( f_fname, 'r') do |fu| forc_fname = fu.gets.chomp end
+  exec_command("ln -s #{forc_fname} avges.nc")
+=end # temporary comment out
+
+
+# set initial condition
+  qres = "k247_make_restart_q-gcm"
+  qres_e = "#{qres}.exe"
+  qres_f = "#{qres}.F90"
+  bes_dir = "~/mod_ifort/"; bes_fhead = "bessel_k247"
+    bes_o = "#{bes_fhead}.o"; bes_m = "#{bes_fhead}.mod"
+    exec_command( "ln -s #{bes_dir+bes_o} .") unless File.exist?( bes_o )
+    exec_command( "ln -s #{bes_dir+bes_m} .") unless File.exist?( bes_m )
+  op_bes = bes_o
+  exec_command( "ifort #{op_w} -o #{qres_e} #{qres_f} #{op_bes} #{op_ncdf}" )
+  pret = popen3_wrap( "./#{qres_e}" )
+    show_stdoe( pret )
+  restart_fname = ""; r_fname = "./restart_fname.txt"
+    File.open( r_fname, 'r') do |fu| restart_fname = fu.gets.chomp end
+  res_link ="restart.nc"
+    exec_command("mv #{res_link} #{res_link+time_now_str_sec}~") \
+        if File.exist?( res_link )
+  exec_command("ln -s #{restart_fname} #{res_link}")
+
+
+# Under Construction
+## exec command
+cmd_str = "qsub cntl_q-gcm"
+
+
+
+watcher.end_process
+
+
+=begin # get qgcm paramters
 # get qgcm paramters
 # ToDo: refactoring, or establish
   # show parameters from Fortran Program
@@ -46,8 +99,7 @@ watcher = K247_Main_Watch.new
     pret = popen3_wrap( "./#{qp_e}" )
       show_stdoe( pret )
   
-  # interpret parameters
-    # ToDo: get nlo first, 
+  # prepare
     #qpara_all    = %w[ nxto nyto nxpo nypo nlo dxo gpoc hoc ]
     #  qpara_i    = %w[ nxto nyto nxpo nypo nlo ]
     qpara_all    = %w[ nxto nyto nxpo nypo dxo gpoc hoc ]
@@ -55,46 +107,52 @@ watcher = K247_Main_Watch.new
       qpara_f    = %w[ dxo ]
       qpara_f_zi = %w[ gpoc ]
       qpara_f_z  = %w[ hoc ]
-    qp_ary = {}
+    qp_hash = {}
     qp_line = pret["o"].clone
-    # get nlo
-
-#=begin
-    # set hash
-    pret["o"].each do | l |
+  # get & define nlo ( for qpara_f_z )
+    for n in 0..qp_line.length-1
+      if qp_line[n].include?("nlo")
+        nlo = qp_line[n].chomp.split("=")[1].to_i
+        qp_line.delete_at( n )
+        break
+      end
+    end
+  # set hash
+    #pret["o"].each do | l |
+    qp_line.each do | l |
       #p line.chomp.split("=")[1].to_f
       # I cannot use eval() @ 2015-10-03
       qpara_i.each do | qp |
-        qp_ary[qp] = l.chomp.split("=")[1].to_i  if l.include?( qp )
+        qp_hash[qp] = l.chomp.split("=")[1].to_i  if l.include?( qp )
       end
       qpara_f.each do | qp |
-        qp_ary[qp] = l.chomp.split("=")[1].to_f  if l.include?( qp )
+        qp_hash[qp] = l.chomp.split("=")[1].to_f  if l.include?( qp )
       end
       qpara_f_zi.each do | qp |
-        qp_ary[qp] = l.chomp.split("=")[1].to_f  if l.include?( qp )
+        qp_hash[qp] = l.chomp.split("=")[1].to_f  if l.include?( qp )
       end
       qpara_f_z.each do | qp |
         if l.include?( qp )
           nums = l.chomp.split("=")[1]
-          #qp_ary[qp] = l.chomp.split("      ").to_f
-          tmp_z = 2
-          for k in 0..tmp_z-1
-            p nums.split("      ")[k].to_f
+          tary = []
+          for k in 0..nlo-1
+            tary[k] = nums.split("      ")[k].to_f
           end
+          qp_hash[qp] = tary
         end
       end
     end
-    p qp_ary
-    # plan @ 2015-10-03
-    #nxto = qp_ary["nxto"]
-#=end
-
-# Under Construction
-## set boundary condition
-## set initial condition
-## exec command
-cmd_str = "qsub cntl_q-gcm"
-
-
-
-watcher.end_process
+  # define parameters
+    # code generator
+      #qpara_all.each do | q |
+      #  puts "#{q} = qp_hash[\"#{q}\"]"
+      #  puts "p #{q}"
+      #end
+    nxto = qp_hash["nxto"]
+    nyto = qp_hash["nyto"]
+    nxpo = qp_hash["nxpo"]
+    nypo = qp_hash["nypo"]
+    dxo  = qp_hash["dxo"]
+    gpoc = qp_hash["gpoc"]
+    hoc  = qp_hash["hoc"]
+=end # get qgcm paramters
