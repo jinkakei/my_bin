@@ -18,7 +18,7 @@ require '~/lib_k247/K247_qgcm'
 
 watcher = K247_Main_Watch.new
 
-=begin # temporary comment out
+#=begin # temporary comment out
 # prepare
   exefname = "q-gcm"
   exit_with_msg ("The executable file #{exefname} is not exist") \
@@ -33,7 +33,7 @@ watcher = K247_Main_Watch.new
   exec_command( "mkdir #{odir}" )
   File.open( "outdata.dat", 'w' ) do | f | f.puts "#{odir}" end
   ##  exec_command( "rmdir #{odir}" ) # for test
-=end
+#=end
 
 
 # get qgcm paramters -> see below
@@ -43,7 +43,7 @@ watcher = K247_Main_Watch.new
   op_ncdf = "-I#{ncdf_path}/include -L#{ncdf_path}/lib -lnetcdf -lnetcdff"
   op_w = "-warn all"
 
-=begin # temporary comment out
+#=begin # temporary comment out
 # set boundary condition
   qfor = "k247_make_forcing_q-gcm"
   qfor_e = "#{qfor}.exe"
@@ -54,8 +54,11 @@ watcher = K247_Main_Watch.new
     show_stdoe( pret )
   forc_fname = ""; f_fname = "./forcing_fname.txt"
     File.open( f_fname, 'r') do |fu| forc_fname = fu.gets.chomp end
-  exec_command("ln -s #{forc_fname} avges.nc")
-=end # temporary comment out
+  forc_link = "avges.nc"
+    exec_command("mv #{forc_link} #{forc_link+time_now_str_sec}~") \
+        if File.exist?( forc_link )
+  exec_command("ln -s #{forc_fname} #{forc_link}")
+#=end # temporary comment out
 
 
 # set initial condition
@@ -67,7 +70,10 @@ watcher = K247_Main_Watch.new
     exec_command( "ln -s #{bes_dir+bes_o} .") unless File.exist?( bes_o )
     exec_command( "ln -s #{bes_dir+bes_m} .") unless File.exist?( bes_m )
   op_bes = bes_o
-  exec_command( "ifort #{op_w} -o #{qres_e} #{qres_f} #{op_bes} #{op_ncdf}" )
+  op_modon = "-Duse_modon"
+  #op_modon = "" # not modon mode
+  exec_command( "ifort #{op_w} -o #{qres_e} #{qres_f} \
+                  #{op_bes} #{op_ncdf} #{op_modon}" )
   pret = popen3_wrap( "./#{qres_e}" )
     show_stdoe( pret )
   restart_fname = ""; r_fname = "./restart_fname.txt"
@@ -78,10 +84,9 @@ watcher = K247_Main_Watch.new
   exec_command("ln -s #{restart_fname} #{res_link}")
 
 
-# Under Construction
-## exec command
-cmd_str = "qsub cntl_q-gcm"
-
+# exec command
+#cmd_str = "qsub cntl_q-gcm"
+exec_command( "qsub cntl_q-gcm" )
 
 
 watcher.end_process
