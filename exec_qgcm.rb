@@ -48,13 +48,17 @@ watcher = K247_Main_Watch.new
   
   # interpret parameters
     # ToDo: get nlo first, 
-    qpara_all    = %w[ nxto nyto nxpo nypo nlo dxo gpoc hoc ]
-      qpara_i    = %w[ nxto nyto nxpo nypo nlo ]
+    #qpara_all    = %w[ nxto nyto nxpo nypo nlo dxo gpoc hoc ]
+    #  qpara_i    = %w[ nxto nyto nxpo nypo nlo ]
+    qpara_all    = %w[ nxto nyto nxpo nypo dxo gpoc hoc ]
+      qpara_i    = %w[ nxto nyto nxpo nypo ]
       qpara_f    = %w[ dxo ]
       qpara_f_zi = %w[ gpoc ]
       qpara_f_z  = %w[ hoc ]
     qp_ary = {}
-    p pret["o"]
+    qp_line = pret["o"].clone
+    # get nlo
+
 #=begin
     # set hash
     pret["o"].each do | l |
@@ -80,7 +84,7 @@ watcher = K247_Main_Watch.new
         end
       end
     end
-    #p qp_ary
+    p qp_ary
     # plan @ 2015-10-03
     #nxto = qp_ary["nxto"]
 #=end
