@@ -3,8 +3,13 @@
 require "~/lib_k247/git_k247"
 include Git_K247
 
+if ARGV[0] == "ask"
+  exec_gpull = get_y_or_n( "git pull?: " ) 
+else
+  exec_gpull = "y" 
+end
 
-ret = git_gdir_each("pull")
+git_gdir_each("pull") if exec_gpull == "y"
 
 
 puts "End of program #{$0}"
